@@ -1,16 +1,36 @@
 import networkx as nx
 from graph_data import create_graph
+import sys
+from algos import dijkstra
 
 print("--- Пошук найдешевшого варіанту (Дейкстра) ---")
 
 G = create_graph()
 
-start = "PrivatBank"
-end = "PayPal"
+start = sys.argv[1] if len(sys.argv) > 1 else "PrivatBank"
+end = sys.argv[2] if len(sys.argv) > 2 else "PayPal"
 
-# Найдешевший шлях (мінімальна сумарна комісія)
-cheapest_path = nx.dijkstra_path(G, source=start, target=end, weight='weight')
-cheapest_cost = nx.dijkstra_path_length(G, source=start, target=end, weight='weight')
+def nx_to_dict(G):
+    return {node: {n: G[node][n]['weight'] for n in G.neighbors(node)} for node in G.nodes()}
+
+def get_path(parents, start, end):
+    path = []
+    current = end
+    while current is not None:
+        path.append(current)
+        current = parents[current]
+    return path[::-1]
+
+G = create_graph()
+graph_dict = nx_to_dict(G)
+
+start = sys.argv[1] if len(sys.argv) > 1 else "PrivatBank"
+end = sys.argv[2] if len(sys.argv) > 2 else "PayPal"
+
+distances, parents = dijkstra(graph_dict, start)
+
+cheapest_path = get_path(parents, start, end)
+cheapest_cost = distances[end]
 
 print(f"Оптимальний маршрут: {cheapest_path}")
 print(f"Сумарна комісія: {cheapest_cost} $")
